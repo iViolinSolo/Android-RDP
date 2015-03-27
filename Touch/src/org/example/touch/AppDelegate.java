@@ -101,7 +101,7 @@ public class AppDelegate extends Application {
 	        	try {
 		        	 Log.d("Testing", "Sending");
 		        	 
-		        	 if(!connected)buf = new String("Connectivity").getBytes();
+		        	 if(!connected) buf = new String("Connectivity").getBytes();
 		        	 else buf = new String("Connected").getBytes();
 		        	 
 		             DatagramPacket out = new DatagramPacket(buf, buf.length, serverAddr, serverPort);

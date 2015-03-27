@@ -154,7 +154,7 @@ public class ServerWindow implements ActionListener{
 		public void run(){
 			boolean connected = false;
 			try {InetAddress ip = InetAddress.getLocalHost(); 
-				serverMessages.setText("Waiting for connection on " + ip.getCanonicalHostName());
+				serverMessages.setText("Waiting for connection on " + ip);
 				
 				server = new DatagramSocket(PORT, ip);
 				
@@ -175,6 +175,8 @@ public class ServerWindow implements ActionListener{
 						serverMessages.setText("Trying to Connect");
 						server.send(dgp); //echo the message back
 					}else if(message.equals("Connected")){
+						serverMessages.setText("Connected");
+//						Thread.sleep(3000); 
 						server.send(dgp); //echo the message back
 					}else if(message.equals("Close")){
 						serverMessages.setText("Controller has Disconnected. Trying to reconnect."); //echo the message back
