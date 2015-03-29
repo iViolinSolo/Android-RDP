@@ -139,7 +139,7 @@ public class ServerWindow implements ActionListener{
 		private InetAddress phoneImgTransIP;
 		private boolean connected = false;
 		private byte[] imgBuf = new byte[8192];
-    	public static final String msgInit="ImgTransInit", msgBegin="ImgTransBegin";
+    	public static final String msgInit="ImgTransInit", msgBegin="ImgTransBegin", msgEnd="ImgTransEnd";
 		
 		private byte[] buf;
 		private DatagramPacket dgp;
@@ -263,6 +263,25 @@ public class ServerWindow implements ActionListener{
 							}
 							//echo end....
 							//begin send data without stop...
+							while (connected) {//get in another loop, never ever get out only if the app is terminated
+								//process capture & sending logic 
+								try {
+									//get screen shot in Bytes[]
+									byte[] targetTotalBuf = getScreenShot();
+									ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(targetTotalBuf);//transfer byte[] into InputStream
+									int n = -1;
+									while ((n = byteArrayInputStream.read(imgBuf))!=-1) {
+										imgTransPacket = new DatagramPacket(imgBuf, imgBuf.length);
+										imgTransSocket.send(imgTransPacket);
+										//send package...
+									}
+									imgBuf = RemoteDataServer.msgEnd.getBytes();
+									
+									
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}//end while(connected)---- inside is sending logic
 							
 							
 						}//end msgBegin
@@ -277,6 +296,7 @@ public class ServerWindow implements ActionListener{
 		 */
 		public byte[] getScreenShot() {
 			log("print screen!\n>>>>>>");
+			
 			//new Robot...
 			Robot robot = null;
 			try {
@@ -285,14 +305,15 @@ public class ServerWindow implements ActionListener{
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			
+			//get screen shot...
 			BufferedImage image = RobotHelper.captureWholeScreen(robot, 0);
 //			File iSaveFile = new File("temp.png");
 			
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
 			try {
 				//-----begin---绘制鼠标 因为直接截屏之后的图片是没有鼠标的
-				Image cursorImg = ImageIO.read(new File("z:/cursor.png"));
+				Image cursorImg = ImageIO.read(new File("z:/cursor.png"));//TODO: REMEBER to change the file path
 				
 				int curCursorX = MouseInfo.getPointerInfo().getLocation().x;
 				int curCursorY = MouseInfo.getPointerInfo().getLocation().y;
@@ -301,9 +322,8 @@ public class ServerWindow implements ActionListener{
 				graphics2d.drawImage(cursorImg, curCursorX, curCursorY, 32, 32, null);
 				//-----end---
 
-				ImageIO.write(image, "png", byteArrayOutputStream);
+				ImageIO.write(image, "png", byteArrayOutputStream);//write into output stream
 //				ImageIO.write(image, "png", iSaveFile);
-				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
