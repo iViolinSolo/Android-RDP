@@ -1,7 +1,3 @@
-// 	Copyright 2010 Justin Taylor
-// 	This software can be distributed under the terms of the
-// 	GNU General Public License. 
-
 package org.example.touch;
 
 import android.app.Activity;
@@ -76,6 +72,7 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
 
 		AppDelegate appDel = ((AppDelegate)getApplicationContext());
 		sendToAppDel(new String("Mouse Sensitivity!!"+appDel.mouse_sensitivity));
+		sendToAppDelTransImg(new String("Trans Img Ready"));//表示已经准备好打开通道!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!应该直接就是最新的socket了
 		
 			new Thread(new Runnable(){
 				AppDelegate appDel = ((AppDelegate)getApplicationContext());
@@ -121,6 +118,18 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
 			finish();
 		}
 	}
+	// send message to AppDelegate class
+	// to be sent to server on client desktop
+	private void sendToAppDelTransImg(String message){
+		AppDelegate appDel = ((AppDelegate)getApplicationContext());
+		if(appDel.connected){
+			appDel.sendMsgTransImg(message);
+		}
+		else{
+			finish();
+		}
+	}
+		
 	// send a mouse message
     private void mousePadHandler(MotionEvent event) {
  	   StringBuilder sb = new StringBuilder();

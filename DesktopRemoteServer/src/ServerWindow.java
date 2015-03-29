@@ -1,6 +1,3 @@
-// 	Copyright 2010 Justin Taylor
-// 	This software can be distributed under the terms of the
-// 	GNU General Public License. 
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,6 +68,10 @@ public class ServerWindow implements ActionListener{
 		window.setResizable(false);
 	}
 	
+	public void log(String msg) {
+		System.out.println(msg);
+	}
+	
 	public void actionPerformed(ActionEvent e){
 		Object src = e.getSource();
 		
@@ -110,6 +111,12 @@ public class ServerWindow implements ActionListener{
 	public class RemoteDataServer implements Runnable{
 		int PORT;
 		private DatagramSocket server;
+		//just for transfer image
+		private final int imgTransPort = 6473;
+		private DatagramSocket imgTransSocket;
+		private int phoneImgTransPort=-1;
+		private InetAddress phoneImgTransIP;
+		
 		private byte[] buf;
 		private DatagramPacket dgp;
 		
@@ -173,11 +180,27 @@ public class ServerWindow implements ActionListener{
 					if (message.equals("Connectivity")){
 						//send response to confirm connectivity
 						serverMessages.setText("Trying to Connect");
+						log(new String("current client info: "+dgp.getAddress()+":"+dgp.getPort()));
 						server.send(dgp); //echo the message back
 					}else if(message.equals("Connected")){
 						serverMessages.setText("Connected");
 //						Thread.sleep(3000); 
+						
 						server.send(dgp); //echo the message back
+					}else if(message.equals("Trans Img Ready")){//be ready for transfer img
+						phoneImgTransPort = dgp.getPort();
+						phoneImgTransIP = dgp.getAddress();
+						serverMessages.setText("Prepare for transfer image to "+phoneImgTransIP+":"+phoneImgTransPort); 
+						log(new String("trans current client info: "+dgp.getAddress()+":"+dgp.getPort()));
+						
+						new Thread(new Runnable() {
+							
+							@Override
+							public void run() {
+								//create new thread for transfer image
+								initTransImgThread();
+							}
+						}).start();
 					}else if(message.equals("Close")){
 						serverMessages.setText("Controller has Disconnected. Trying to reconnect."); //echo the message back
 					}else{
@@ -188,6 +211,19 @@ public class ServerWindow implements ActionListener{
 					serverMessages.setText("Disconnected");
 					connected = false;}
 			}
+		}
+
+		protected void initTransImgThread() {
+			try {
+				InetAddress ip = InetAddress.getLocalHost();
+				imgTransSocket = new DatagramSocket(imgTransPort, ip);
+				
+			} catch (SocketException e) {
+				e.printStackTrace();
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+			
 		}
 	}
 }

@@ -1,7 +1,3 @@
-// 	Copyright 2010 Justin Taylor
-// 	This software can be distributed under the terms of the
-// 	GNU General Public License. 
-
 package org.example.touch;
 
 import android.app.Activity;
@@ -33,7 +29,7 @@ public class Touch extends Activity{
 		portField = (EditText) findViewById(R.id.EditText02);
 		sensitivity = (SeekBar) findViewById(R.id.SeekBar01);
 		
-		ipField.setText("192.168.1.2");	
+		ipField.setText("192.168.1.100");	
 		portField.setText("5444");
 		
 		alert = new AlertDialog.Builder(this).create();

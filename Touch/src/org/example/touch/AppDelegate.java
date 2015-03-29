@@ -1,11 +1,9 @@
-// 	Copyright 2010 Justin Taylor
-// 	This software can be distributed under the terms of the
-// 	GNU General Public License. 
-
 package org.example.touch;
 
 import android.app.Application;
 import android.util.Log;
+
+import java.io.IOException;
 import java.net.*;
 
 public class AppDelegate extends Application {
@@ -30,6 +28,10 @@ public class AppDelegate extends Application {
 		client.sendMessage(message);
 	}
 	
+	public void sendMsgTransImg(String message) {
+		client.sendMsgTransImg(message);
+	}
+	
 	public void stopServer(){
 		if(connected){
 			client.closeSocket();
@@ -41,8 +43,10 @@ public class AppDelegate extends Application {
     	
     	private InetAddress serverAddr;
     	private int serverPort;
-    	private DatagramSocket socket;
+		private final int imgTransPort = 6473;
+    	private DatagramSocket socket,imgRecSocket;
     	byte[] buf = new byte[1000];
+    	byte[] imgBuf = new byte[8192];
     	
     	public ClientThread(String ip, int port){
     		try{
@@ -59,6 +63,8 @@ public class AppDelegate extends Application {
             try {
                 socket = new DatagramSocket();
                 socket.setSoTimeout(1000);
+                imgRecSocket = new DatagramSocket();//receive image socket
+//                imgRecSocket.setSoTimeout(1000);
                 connected = testConnection();
                 if(connected)
                 	surveyConnection();
@@ -67,6 +73,18 @@ public class AppDelegate extends Application {
                 Log.e("ClientActivity", "Client Connection Error", e);
             }
         }
+        
+        public void sendMsgTransImg(String message) {//same as the following method
+			try {
+				imgBuf = message.getBytes();
+//				DatagramPacket out = new DatagramPacket(imgBuf, imgBuf.length, serverAddr, imgTransPort);
+				DatagramPacket out = new DatagramPacket(imgBuf, imgBuf.length, serverAddr, serverPort);
+				imgRecSocket.send(out);
+                Log.d("ClientActivity", "Sent." + message);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
         
         public void sendMessage(String message){
     		try {
@@ -88,12 +106,14 @@ public class AppDelegate extends Application {
         
         public void closeSocketNoMessge(){
         	socket.close();
+        	imgRecSocket.close();
         	connected = false;
         }
         
         public void closeSocket(){
         	sendMessage(new String("Close"));
         	socket.close();
+        	imgRecSocket.close();
         	connected = false;
         }
         

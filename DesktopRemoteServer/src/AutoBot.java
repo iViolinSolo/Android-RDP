@@ -1,6 +1,3 @@
-// 	Copyright 2010 Justin Taylor
-// 	This software can be distributed under the terms of the
-// 	GNU General Public License. 
 
 import java.awt.Robot;
 import java.awt.MouseInfo;
