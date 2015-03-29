@@ -1,8 +1,26 @@
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.net.*;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.MouseInfo;
+import java.awt.Robot;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.BindException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+
+import javax.imageio.ImageIO;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 public class ServerWindow implements ActionListener{
 	
@@ -116,6 +134,9 @@ public class ServerWindow implements ActionListener{
 		private DatagramSocket imgTransSocket;
 		private int phoneImgTransPort=-1;
 		private InetAddress phoneImgTransIP;
+		private boolean connected = false;
+		private byte[] imgBuf = new byte[8192];
+    	public static final String msgInit="ImgTransInit", msgBegin="ImgTransBegin";
 		
 		private byte[] buf;
 		private DatagramPacket dgp;
@@ -159,11 +180,12 @@ public class ServerWindow implements ActionListener{
 		}
 		
 		public void run(){
-			boolean connected = false;
+//			boolean connected = false;
 			try {InetAddress ip = InetAddress.getLocalHost(); 
 				serverMessages.setText("Waiting for connection on " + ip);
 				
 				server = new DatagramSocket(PORT, ip);
+				imgTransSocket = new DatagramSocket(imgTransPort, ip);//init another socket 
 				
 				connected = true;
 				connectButton.setEnabled(false);
@@ -171,9 +193,11 @@ public class ServerWindow implements ActionListener{
 			catch(BindException e){ serverMessages.setText("Port "+PORT+" is already in use. Use a different Port"); }
 			catch(Exception e){serverMessages.setText("Unable to connect");}
 			
+			createImgTransMsgSender();//thread blocked here ... for no such timeout
+			
 			while(connected){
 				// get message from sender
-				try{ server.receive(dgp);
+				try{ server.receive(dgp);//thread blocked here ... for no such timeout
 				
 					// translate and use the message to automate the desktop
 					message = new String(dgp.getData(), 0, dgp.getLength());
@@ -187,20 +211,6 @@ public class ServerWindow implements ActionListener{
 //						Thread.sleep(3000); 
 						
 						server.send(dgp); //echo the message back
-					}else if(message.equals("Trans Img Ready")){//be ready for transfer img
-						phoneImgTransPort = dgp.getPort();
-						phoneImgTransIP = dgp.getAddress();
-						serverMessages.setText("Prepare for transfer image to "+phoneImgTransIP+":"+phoneImgTransPort); 
-						log(new String("trans current client info: "+dgp.getAddress()+":"+dgp.getPort()));
-						
-						new Thread(new Runnable() {
-							
-							@Override
-							public void run() {
-								//create new thread for transfer image
-								initTransImgThread();
-							}
-						}).start();
 					}else if(message.equals("Close")){
 						serverMessages.setText("Controller has Disconnected. Trying to reconnect."); //echo the message back
 					}else{
@@ -210,20 +220,81 @@ public class ServerWindow implements ActionListener{
 				}catch(Exception e){
 					serverMessages.setText("Disconnected");
 					connected = false;}
-			}
+			}//end while
 		}
 
-		protected void initTransImgThread() {
-			try {
-				InetAddress ip = InetAddress.getLocalHost();
-				imgTransSocket = new DatagramSocket(imgTransPort, ip);
+		private void createImgTransMsgSender() {
+			new Thread(new Runnable() {
 				
-			} catch (SocketException e) {
-				e.printStackTrace();
-			} catch (UnknownHostException e) {
+				@Override
+				public void run() {
+					while (connected) {
+						//receive data from phone side 
+						DatagramPacket imgTransPacket = new DatagramPacket(imgBuf, imgBuf.length);
+						try {
+							imgTransSocket.receive(imgTransPacket);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						String strImgTransContent = new String(imgTransPacket.getData(), 0, imgTransPacket.getLength());
+						//switch -- consume msg:
+						
+						if (strImgTransContent.equals(RemoteDataServer.msgInit)) {
+							//receive msg "init"
+							phoneImgTransPort=imgTransPacket.getPort();
+							phoneImgTransIP=imgTransPacket.getAddress();
+							try {
+								imgTransSocket.send(imgTransPacket);//echo: send back the package
+							} catch (IOException e) {
+								log("Send Back package Error!");
+								e.printStackTrace();
+							}
+						} else if (strImgTransContent.equals(RemoteDataServer.msgBegin)) {
+							//receive msg "begin"
+							try {
+								imgTransSocket.send(imgTransPacket);//echo: send back the package
+							} catch (IOException e) {
+								log("Send Back package Error!");
+								e.printStackTrace();
+							}
+							//echo end....
+							//begin send data without stop...
+							
+							
+						}//end msgBegin
+					}//end while(true)
+				}
+			}).start();
+		}//method end
+		
+		/**
+		 * get current screen shot
+		 * @param robot No Special Requirements
+		 */
+		public void getScreenShot(Robot robot) {
+			log("print screen!\n>>>>>>");
+			
+			BufferedImage image = RobotHelper.captureWholeScreen(robot, 0);
+			File iSaveFile = new File("temp.png");
+			try {
+				//-----begin---绘制鼠标 因为直接截屏之后的图片是没有鼠标的
+				Image cursorImg = ImageIO.read(new File("z:/cursor.png"));
+				
+				int curCursorX = MouseInfo.getPointerInfo().getLocation().x;
+				int curCursorY = MouseInfo.getPointerInfo().getLocation().y;
+				
+				Graphics2D graphics2d=image.createGraphics();
+				graphics2d.drawImage(cursorImg, curCursorX, curCursorY, 32, 32, null);
+				//-----end---
+				
+				ImageIO.write(image, "png", iSaveFile);
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
-		}
+
+			log("screen print success");
+		}//end method
+		
 	}
 }
