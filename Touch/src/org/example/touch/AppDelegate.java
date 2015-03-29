@@ -12,6 +12,7 @@ public class AppDelegate extends Application {
 	public int mouse_sensitivity = 1;
 	public boolean connected = false;
 	public boolean network_reachable = true;
+	private final String TAG = "AppDelegate";
 	
 	public void onCreate(){
 		super.onCreate();
@@ -47,6 +48,7 @@ public class AppDelegate extends Application {
     	private DatagramSocket socket,imgRecSocket;
     	byte[] buf = new byte[1000];
     	byte[] imgBuf = new byte[8192];
+    	public static final String msgInit="ImgTransInit", msgBegin="ImgTransBegin";
     	
     	public ClientThread(String ip, int port){
     		try{
@@ -66,19 +68,62 @@ public class AppDelegate extends Application {
                 imgRecSocket = new DatagramSocket();//receive image socket
 //                imgRecSocket.setSoTimeout(1000);
                 connected = testConnection();
-                if(connected)
-                	surveyConnection();
+                if(connected) {
+                	createImgTransMsgListener();
+                	surveyConnection();//thread blocked here... while(true)
+                }
             }
             catch (Exception e) {
                 Log.e("ClientActivity", "Client Connection Error", e);
             }
         }
         
-        public void sendMsgTransImg(String message) {//same as the following method
+        /**
+         * use for create a new thread, 
+         * then listen Msg from channel ImgTrans, 
+         * consume it and response it
+         */
+        private void createImgTransMsgListener() {
+        	new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					while (connected) {
+						boolean readyForRec = false;
+						//receive msg
+						DatagramPacket imgRecPacket = new DatagramPacket(imgBuf, 0, imgBuf.length);
+						try {
+							imgRecSocket.receive(imgRecPacket);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						String imgRecPkgContent = new String(imgRecPacket.getData(), 0, imgRecPacket.getLength());
+						
+						//switch-- consume msgs
+						if (imgRecPkgContent.equals(msgInit)) {
+							sendMsgTransImg(msgBegin);//echo msg "begin"
+						} else if (imgRecPkgContent.equals(msgBegin)) {
+							readyForRec = true;//begin receiving data
+						} else {
+							Log.e(TAG, "Unknown Msg: "+imgRecPkgContent);
+						}
+						
+						//receiving data if possible
+						while (readyForRec) {
+//							handleDataReceived!
+							//TODO: Not finished! for init method receive data from sever
+						}
+						
+					}//end while
+				}
+			}).start();
+		}
+
+		public void sendMsgTransImg(String message) {//same as the following method
 			try {
 				imgBuf = message.getBytes();
-//				DatagramPacket out = new DatagramPacket(imgBuf, imgBuf.length, serverAddr, imgTransPort);
-				DatagramPacket out = new DatagramPacket(imgBuf, imgBuf.length, serverAddr, serverPort);
+				DatagramPacket out = new DatagramPacket(imgBuf, imgBuf.length, serverAddr, imgTransPort);//TODO: Need Check again
+//				DatagramPacket out = new DatagramPacket(imgBuf, imgBuf.length, serverAddr, serverPort);
 				imgRecSocket.send(out);
                 Log.d("ClientActivity", "Sent." + message);
 			} catch (IOException e) {
