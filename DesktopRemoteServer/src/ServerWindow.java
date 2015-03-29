@@ -1,4 +1,5 @@
 
+import java.awt.AWTException;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
@@ -8,6 +9,8 @@ import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
@@ -272,11 +275,21 @@ public class ServerWindow implements ActionListener{
 		 * get current screen shot
 		 * @param robot No Special Requirements
 		 */
-		public void getScreenShot(Robot robot) {
+		public byte[] getScreenShot() {
 			log("print screen!\n>>>>>>");
-			
+			//new Robot...
+			Robot robot = null;
+			try {
+				robot = new Robot();
+			} catch (AWTException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			BufferedImage image = RobotHelper.captureWholeScreen(robot, 0);
-			File iSaveFile = new File("temp.png");
+//			File iSaveFile = new File("temp.png");
+			
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
 			try {
 				//-----begin---绘制鼠标 因为直接截屏之后的图片是没有鼠标的
 				Image cursorImg = ImageIO.read(new File("z:/cursor.png"));
@@ -287,13 +300,16 @@ public class ServerWindow implements ActionListener{
 				Graphics2D graphics2d=image.createGraphics();
 				graphics2d.drawImage(cursorImg, curCursorX, curCursorY, 32, 32, null);
 				//-----end---
+
+				ImageIO.write(image, "png", byteArrayOutputStream);
+//				ImageIO.write(image, "png", iSaveFile);
 				
-				ImageIO.write(image, "png", iSaveFile);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+			
 			log("screen print success");
+			return byteArrayOutputStream.toByteArray();
 		}//end method
 		
 	}
