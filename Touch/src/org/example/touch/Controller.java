@@ -11,6 +11,7 @@ import android.view.*;
 
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.text.Editable;
 import android.text.TextWatcher;
 
@@ -20,6 +21,9 @@ import android.graphics.Bitmap;
 
 
 public class Controller extends Activity implements OnTouchListener, OnKeyListener{
+	
+	private ImageView ivDestopShot;//reveal screen shot
+	private final String TAG = "Controller";
 	
 	int lastXpos = 0;
 	int lastYpos = 0;
@@ -35,6 +39,8 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
 		
 	 	Display display = getWindowManager().getDefaultDisplay(); 
 	 	int width = display.getWidth();
+	 	
+		ivDestopShot = (ImageView) findViewById(R.id.ivDesktopShot);//reveal screen shot
 	 	
 	 	Button left = (Button) findViewById(R.id.LeftClickButton);
 	 	Button right =  (Button) findViewById(R.id.RightClickButton);
@@ -213,6 +219,8 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
 
 				AppDelegate appDel = ((AppDelegate)getApplicationContext());
 				Bitmap imgBitmap = appDel.imgBitmap;
+				ivDestopShot.setImageBitmap(imgBitmap);
+				Log.d(TAG, "Image setted");
 				break;
 
 			default:

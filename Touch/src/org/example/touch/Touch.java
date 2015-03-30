@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.content.DialogInterface;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 
 import android.util.Log;
@@ -28,6 +30,7 @@ public class Touch extends Activity{
 		ipField = (EditText) findViewById(R.id.EditText01);
 		portField = (EditText) findViewById(R.id.EditText02);
 		sensitivity = (SeekBar) findViewById(R.id.SeekBar01);
+		
 		
 		ipField.setText("192.168.1.100");	
 		portField.setText("5444");
