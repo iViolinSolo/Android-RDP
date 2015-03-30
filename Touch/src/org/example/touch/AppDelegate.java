@@ -1,8 +1,11 @@
 package org.example.touch;
 
 import android.app.Application;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.*;
 
@@ -12,6 +15,7 @@ public class AppDelegate extends Application {
 	public int mouse_sensitivity = 1;
 	public boolean connected = false;
 	public boolean network_reachable = true;
+	public Bitmap imgBitmap = null;
 	private final String TAG = "AppDelegate";
 	
 	public void onCreate(){
@@ -48,7 +52,7 @@ public class AppDelegate extends Application {
     	private DatagramSocket socket,imgRecSocket;
     	byte[] buf = new byte[1000];
     	byte[] imgBuf = new byte[8192];
-    	public static final String msgInit="ImgTransInit", msgBegin="ImgTransBegin";
+    	public static final String msgInit="ImgTransInit", msgBegin="ImgTransBegin", msgEnd="ImgTransEnd";
     	
     	public ClientThread(String ip, int port){
     		try{
@@ -107,12 +111,39 @@ public class AppDelegate extends Application {
 						} else {
 							Log.e(TAG, "Unknown Msg: "+imgRecPkgContent);
 						}
-						
+						if (!readyForRec) {
+							continue;
+						}
 						//receiving data if possible
+						imgBuf = new byte[8192];
+						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 						while (readyForRec) {
 //							handleDataReceived!
 							//TODO: Not finished! for init method receive data from sever
+//							byteArrayOutputStream.reset();//reset output stream, close() method is not available for clear data in byte array output stream
+							try {
+								imgRecPacket = new DatagramPacket(imgBuf, imgBuf.length);
+								imgRecSocket.receive(imgRecPacket);
+								String msg = new String(imgRecPacket.getData(),0,imgRecPacket.getLength());
+								if (msg.startsWith(ClientThread.msgEnd)) {//if "End" appears, then break;
+									Log.i(TAG, "Receive Finished, One Picture!!!!");
+									readyForRec = false;
+									break;
+								}
+								byteArrayOutputStream.write(imgRecPacket.getData(), 0, imgRecPacket.getLength());
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}//end while (readyForRec)
+						byte[] imgReceived = byteArrayOutputStream.toByteArray();
+						try {
+							byteArrayOutputStream.close();
+						} catch (IOException e) {
+							e.printStackTrace();
 						}
+						
+						Bitmap bitmap = BitmapFactory.decodeByteArray(imgReceived, 0, imgReceived.length);//transfer byte[] into bitmap
+						imgBitmap = bitmap;//transfer byte[] into bitmap
 						
 					}//end while
 				}
