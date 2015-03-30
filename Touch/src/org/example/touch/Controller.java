@@ -2,10 +2,9 @@ package org.example.touch;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
-import android.view.Display;
-import android.view.MotionEvent;
 import android.view.View.OnTouchListener;
 import android.view.View.OnKeyListener;
 import android.view.*;
@@ -71,21 +70,22 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
 		super.onStart();
 
 		AppDelegate appDel = ((AppDelegate)getApplicationContext());
+		appDel.setmBitmapHandler(bitmapHandler);//set handler.....
 		sendToAppDel(new String("Mouse Sensitivity!!"+appDel.mouse_sensitivity));
-		sendToAppDelTransImg(new String("Trans Img Ready"));//表示已经准备好打开通道!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!应该直接就是最新的socket了
+		sendToAppDelTransImg(new String("ImgTransInit"));//表示已经准备好打开通道!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!应该直接就是最新的socket了
 		
-			new Thread(new Runnable(){
-				AppDelegate appDel = ((AppDelegate)getApplicationContext());
-				public void run(){
-					while(appDel.connected){
-						try{Thread.sleep(1000);}
-						catch(Exception e){};
-						if(!appDel.connected){
-							finish();
-						}
+		new Thread(new Runnable(){
+			AppDelegate appDel = ((AppDelegate)getApplicationContext());
+			public void run(){
+				while(appDel.connected){
+					try{Thread.sleep(1000);}
+					catch(Exception e){};
+					if(!appDel.connected){
+						finish();
 					}
 				}
-			}).start();
+			}
+		}).start();
 	}
 	
 	// detect touch events
@@ -204,4 +204,10 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
     		
     	Log.d("SET", "Foucs");
     }
+    
+    private Handler bitmapHandler = new Handler(){
+    	public void handleMessage(android.os.Message msg) {
+    		
+    	};
+    };
 }

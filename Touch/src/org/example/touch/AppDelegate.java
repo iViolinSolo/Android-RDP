@@ -3,6 +3,7 @@ package org.example.touch;
 import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -17,6 +18,7 @@ public class AppDelegate extends Application {
 	public boolean network_reachable = true;
 	public Bitmap imgBitmap = null;
 	private final String TAG = "AppDelegate";
+	private Handler mBitmapHandler = null;
 	
 	public void onCreate(){
 		super.onCreate();
@@ -144,6 +146,8 @@ public class AppDelegate extends Application {
 						
 						Bitmap bitmap = BitmapFactory.decodeByteArray(imgReceived, 0, imgReceived.length);//transfer byte[] into bitmap
 						imgBitmap = bitmap;//transfer byte[] into bitmap
+						//need handler to notify main thread
+						
 						
 					}//end while
 				}
@@ -235,4 +239,8 @@ public class AppDelegate extends Application {
         }
          
     }
+
+	public void setmBitmapHandler(Handler mBitmapHandler) {
+		this.mBitmapHandler = mBitmapHandler;
+	}
 }
