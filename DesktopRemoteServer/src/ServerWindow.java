@@ -254,29 +254,38 @@ public class ServerWindow implements ActionListener{
 								e.printStackTrace();
 							}
 						} else if (strImgTransContent.equals(RemoteDataServer.msgBegin)) {
-							//receive msg "begin"
-							try {
-								imgTransSocket.send(imgTransPacket);//echo: send back the package
-							} catch (IOException e) {
-								log("Send Back package Error!");
-								e.printStackTrace();
-							}
-							//echo end....
+//							//receive msg "begin"
+//							try {
+//								imgTransSocket.send(imgTransPacket);//echo: send back the package
+//							} catch (IOException e) {
+//								log("Send Back package Error!");
+//								e.printStackTrace();
+//							}
+//							//echo end....
 							//begin send data without stop...
 							while (connected) {//get in another loop, never ever get out only if the app is terminated
-								//process capture & sending logic 
+								//process capture & sending logic //TODO: Double Check Needed! 
 								try {
+									//send package "Begin"
+									imgBuf = RemoteDataServer.msgBegin.getBytes();
+									imgTransPacket = new DatagramPacket(imgBuf, imgBuf.length, phoneImgTransIP, phoneImgTransPort);
+									imgTransSocket.send(imgTransPacket);
+									
 									//get screen shot in Bytes[]
 									byte[] targetTotalBuf = getScreenShot();
 									ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(targetTotalBuf);//transfer byte[] into InputStream
 									int n = -1;
-									while ((n = byteArrayInputStream.read(imgBuf))!=-1) {
-										imgTransPacket = new DatagramPacket(imgBuf, imgBuf.length);
+									imgBuf = new byte[8192];//redefinition, rebuild...
+									while ((n = byteArrayInputStream.read(imgBuf)) != -1) {
+										imgTransPacket = new DatagramPacket(imgBuf, imgBuf.length, phoneImgTransIP, phoneImgTransPort);
 										imgTransSocket.send(imgTransPacket);
 										//send package...
 									}
-									imgBuf = RemoteDataServer.msgEnd.getBytes();
 									
+									//send package "End"
+									imgBuf = RemoteDataServer.msgEnd.getBytes();
+									imgTransPacket = new DatagramPacket(imgBuf, imgBuf.length, phoneImgTransIP, phoneImgTransPort);
+									imgTransSocket.send(imgTransPacket);
 									
 								} catch (IOException e) {
 									e.printStackTrace();
