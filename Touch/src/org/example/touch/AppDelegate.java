@@ -147,7 +147,7 @@ public class AppDelegate extends Application {
 						Bitmap bitmap = BitmapFactory.decodeByteArray(imgReceived, 0, imgReceived.length);//transfer byte[] into bitmap
 						imgBitmap = bitmap;//transfer byte[] into bitmap
 						//need handler to notify main thread
-						
+						mBitmapHandler.obtainMessage(EnumMessageInfo.MsgBitmapGenerated).sendToTarget();
 						
 					}//end while
 				}

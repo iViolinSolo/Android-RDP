@@ -16,6 +16,7 @@ import android.text.TextWatcher;
 
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
+import android.graphics.Bitmap;
 
 
 public class Controller extends Activity implements OnTouchListener, OnKeyListener{
@@ -207,7 +208,16 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
     
     private Handler bitmapHandler = new Handler(){
     	public void handleMessage(android.os.Message msg) {
-    		
+    		switch (msg.what) {
+			case EnumMessageInfo.MsgBitmapGenerated:
+
+				AppDelegate appDel = ((AppDelegate)getApplicationContext());
+				Bitmap imgBitmap = appDel.imgBitmap;
+				break;
+
+			default:
+				break;
+			}
     	};
     };
 }
