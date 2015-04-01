@@ -319,8 +319,9 @@ public class ServerWindow implements ActionListener{
 			BufferedImage image = RobotHelper.captureWholeScreen(robot, 0);
 //			File iSaveFile = new File("temp.png");
 			
-			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			byte[] result = null;
 			try {
+				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 				//-----begin---绘制鼠标 因为直接截屏之后的图片是没有鼠标的
 				Image cursorImg = ImageIO.read(new File("z:/cursor.png"));//TODO: REMEBER to change the file path
 				
@@ -333,12 +334,15 @@ public class ServerWindow implements ActionListener{
 
 				ImageIO.write(image, "png", byteArrayOutputStream);//write into output stream
 //				ImageIO.write(image, "png", iSaveFile);
+
+				result = byteArrayOutputStream.toByteArray();
+				byteArrayOutputStream.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			
 			log("screen print success");
-			return byteArrayOutputStream.toByteArray();
+			return result;
 		}//end method
 		
 	}
