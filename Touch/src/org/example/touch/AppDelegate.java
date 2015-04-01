@@ -119,6 +119,9 @@ public class AppDelegate extends Application {
 						//receiving data if possible
 						imgBuf = new byte[8192];
 						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+						
+//						Log.d("Controller", "=======Receive Begin, One Picture!!!!=======");//TODO: need deleted
+						
 						while (readyForRec) {
 //							handleDataReceived!
 							//TODO: Not finished! for init method receive data from sever
@@ -129,6 +132,7 @@ public class AppDelegate extends Application {
 								String msg = new String(imgRecPacket.getData(),0,imgRecPacket.getLength());
 								if (msg.startsWith(ClientThread.msgEnd)) {//if "End" appears, then break;
 									Log.i(TAG, "Receive Finished, One Picture!!!!");
+//									Log.d("Controller", "=======Receive Finished, One Picture!!!!=======");//TODO: need deleted
 									readyForRec = false;
 									break;
 								}
@@ -144,8 +148,10 @@ public class AppDelegate extends Application {
 							e.printStackTrace();
 						}
 						
-						Bitmap bitmap = BitmapFactory.decodeByteArray(imgReceived, 0, imgReceived.length);//transfer byte[] into bitmap
-						imgBitmap = bitmap;//transfer byte[] into bitmap
+//						Bitmap bitmap 
+						imgBitmap = BitmapFactory.decodeByteArray(imgReceived, 0, imgReceived.length);//transfer byte[] into bitmap
+//						imgBitmap = bitmap;//transfer byte[] into bitmap
+//						Log.d("Controller", "=======Bitmap generated...=======");//TODO: need deleted
 						//need handler to notify main thread
 						mBitmapHandler.obtainMessage(EnumMessageInfo.MsgBitmapGenerated).sendToTarget();
 						

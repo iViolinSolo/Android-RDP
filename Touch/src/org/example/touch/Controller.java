@@ -220,7 +220,8 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
 				AppDelegate appDel = ((AppDelegate)getApplicationContext());
 				Bitmap imgBitmap = appDel.imgBitmap;
 				ivDestopShot.setImageBitmap(imgBitmap);
-				Log.d(TAG, "Image setted");
+				imgBitmap = null;
+				Log.d(TAG, "=======Image setted...=======");
 				break;
 
 			default:
