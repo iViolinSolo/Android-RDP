@@ -178,6 +178,7 @@ public class ServerWindow implements ActionListener{
 		
 		public void shutdown(){
 			try{server.close();
+//				imgTransSocket.close();
 				serverMessages.setText("Disconnected");}
 			catch(Exception e){}
 		}
@@ -332,7 +333,7 @@ public class ServerWindow implements ActionListener{
 				graphics2d.drawImage(cursorImg, curCursorX, curCursorY, 32, 32, null);
 				//-----end---
 
-				ImageIO.write(image, "png", byteArrayOutputStream);//write into output stream
+				ImageIO.write(image, "gif", byteArrayOutputStream);//write into output stream
 //				ImageIO.write(image, "png", iSaveFile);
 
 				result = byteArrayOutputStream.toByteArray();
