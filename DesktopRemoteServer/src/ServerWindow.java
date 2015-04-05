@@ -214,7 +214,7 @@ public class ServerWindow implements ActionListener{
 						serverMessages.setText("Connected");
 //						Thread.sleep(3000); 
 						
-						server.send(dgp); //echo the message back
+						server.send(dgp); //echo the message back //response for testConnenction();
 					}else if(message.equals("Close")){
 						serverMessages.setText("Controller has Disconnected. Trying to reconnect."); //echo the message back
 					}else{
