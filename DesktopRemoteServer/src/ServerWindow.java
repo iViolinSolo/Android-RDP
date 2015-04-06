@@ -242,6 +242,7 @@ public class ServerWindow implements ActionListener{
 				public void run() {
 					while (connected) {
 						//receive data from phone side 
+						imgBuf = new byte[8192];
 						DatagramPacket imgTransPacket = new DatagramPacket(imgBuf, imgBuf.length);
 						try {
 							imgTransSocket.receive(imgTransPacket);
@@ -309,6 +310,9 @@ public class ServerWindow implements ActionListener{
 							log("end send image... current ReadyForSend : "+readyForSend);
 							
 						}//end msgBegin
+						else {
+							log("Not Known Message: "+strImgTransContent);
+						}
 					}//end while(true)
 				}
 			}).start();
