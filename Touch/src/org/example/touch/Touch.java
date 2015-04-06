@@ -32,7 +32,7 @@ public class Touch extends Activity{
 		sensitivity = (SeekBar) findViewById(R.id.SeekBar01);
 		
 		
-		ipField.setText("192.168.1.100");	
+		ipField.setText("192.168.1.108");	
 		portField.setText("5444");
 		
 		alert = new AlertDialog.Builder(this).create();
@@ -94,6 +94,7 @@ public class Touch extends Activity{
 		for(x=0;x<4;x++){// every quarter second for one second check if the server is reachable
 			if(appDel.connected){
 				startActivity(new Intent(view.getContext(), Controller.class));
+//				Touch.this.finish();//finish current activity
 				x = 6;
 			}
 			try{Thread.sleep(250);}

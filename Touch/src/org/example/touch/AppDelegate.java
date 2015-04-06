@@ -127,6 +127,7 @@ public class AppDelegate extends Application {
 							//TODO: Not finished! for init method receive data from sever
 //							byteArrayOutputStream.reset();//reset output stream, close() method is not available for clear data in byte array output stream
 							try {
+								readyForRec = connected;
 								imgRecPacket = new DatagramPacket(imgBuf, imgBuf.length);
 								imgRecSocket.receive(imgRecPacket);
 								String msg = new String(imgRecPacket.getData(),0,imgRecPacket.getLength());
@@ -167,8 +168,13 @@ public class AppDelegate extends Application {
 //				DatagramPacket out = new DatagramPacket(imgBuf, imgBuf.length, serverAddr, serverPort);
 				imgRecSocket.send(out);
                 Log.d("ClientActivity", "Sent." + message);
-			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (IOException e) { 
+    			Log.e("ClientActivity", "Client Send Error:");
+    			if(e.getMessage().equals("Network unreachable")){
+    				Log.e("ClientActivity", "Netork UNREACHABLE!!!!:");
+    				network_reachable = false;
+    			}
+    			closeSocketNoMessge();
 			}
 		}
         

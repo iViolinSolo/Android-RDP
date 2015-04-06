@@ -138,6 +138,7 @@ public class ServerWindow implements ActionListener{
 		private int phoneImgTransPort=-1;
 		private InetAddress phoneImgTransIP;
 		private boolean connected = false;
+		private boolean readyForSend = false;//just for cycle while(true)
 		private byte[] imgBuf = new byte[8192];
     	public static final String msgInit="ImgTransInit", msgBegin="ImgTransBegin", msgEnd="ImgTransEnd";
 		
@@ -178,7 +179,7 @@ public class ServerWindow implements ActionListener{
 		
 		public void shutdown(){
 			try{server.close();
-//				imgTransSocket.close();
+				imgTransSocket.close();
 				serverMessages.setText("Disconnected");}
 			catch(Exception e){}
 		}
@@ -192,6 +193,7 @@ public class ServerWindow implements ActionListener{
 				imgTransSocket = new DatagramSocket(imgTransPort, ip);//init another socket 
 				
 				connected = true;
+				readyForSend = true;//synchronize with connect...
 				connectButton.setEnabled(false);
 			}
 			catch(BindException e){ serverMessages.setText("Port "+PORT+" is already in use. Use a different Port"); }
@@ -213,9 +215,13 @@ public class ServerWindow implements ActionListener{
 					}else if(message.equals("Connected")){
 						serverMessages.setText("Connected");
 //						Thread.sleep(3000); 
-						
+						if (!readyForSend) {
+							readyForSend = true;
+						}
 						server.send(dgp); //echo the message back //response for testConnenction();
 					}else if(message.equals("Close")){
+						readyForSend = false;//close means the client side is disconnected, 
+															//so we should disconnect and stop send images. until "init" msg can get from client side
 						serverMessages.setText("Controller has Disconnected. Trying to reconnect."); //echo the message back
 					}else{
 						serverMessages.setText("Connected to Controller");
@@ -223,7 +229,9 @@ public class ServerWindow implements ActionListener{
 					}
 				}catch(Exception e){
 					serverMessages.setText("Disconnected");
-					connected = false;}
+					connected = false;
+					readyForSend = false;//synchronize
+					}
 			}//end while
 		}
 
@@ -248,6 +256,7 @@ public class ServerWindow implements ActionListener{
 							//receive msg "init"
 							phoneImgTransPort=imgTransPacket.getPort();
 							phoneImgTransIP=imgTransPacket.getAddress();
+							log("receive msg \"init\" ");
 							try {
 								imgTransSocket.send(imgTransPacket);//echo: send back the package
 							} catch (IOException e) {
@@ -264,7 +273,12 @@ public class ServerWindow implements ActionListener{
 //							}
 //							//echo end....
 							//begin send data without stop...
-							while (connected) {//get in another loop, never ever get out only if the app is terminated
+							
+							log("receive msg \"begin\" ");
+
+							//i can make ReadyForSend value from false to true;
+							readyForSend = connected;
+							while (readyForSend) {//get in another loop, never ever get out only if the app is terminated
 								//process capture & sending logic //TODO: Double Check Needed! 
 								try {
 									//send package "Begin"
@@ -292,7 +306,7 @@ public class ServerWindow implements ActionListener{
 									e.printStackTrace();
 								}
 							}//end while(connected)---- inside is sending logic
-							
+							log("end send image... current ReadyForSend : "+readyForSend);
 							
 						}//end msgBegin
 					}//end while(true)

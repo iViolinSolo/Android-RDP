@@ -75,7 +75,9 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
 	
 	public void onStart(){
 		super.onStart();
-
+		
+		Log.w(TAG, "--------------------onStart-----------------");
+		
 		AppDelegate appDel = ((AppDelegate)getApplicationContext());
 		appDel.setmBitmapHandler(bitmapHandler);//set handler.....
 		sendToAppDel(new String("Mouse Sensitivity!!"+appDel.mouse_sensitivity));
@@ -93,6 +95,22 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
 				}
 			}
 		}).start();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		Log.w(TAG, "--------------------onDestroy-----------------");
+//		sendToAppDel("Close");
+//		AppDelegate appDel = ((AppDelegate)getApplicationContext());
+//		appDel.connected = false;
+	}
+	
+	@Override
+	public void onBackPressed() {
+//		AppDelegate appDel = ((AppDelegate)getApplicationContext());
+//		appDel.stopServer();
+		super.onBackPressed();
 	}
 	
 	// detect touch events
@@ -130,6 +148,7 @@ public class Controller extends Activity implements OnTouchListener, OnKeyListen
 	private void sendToAppDelTransImg(String message){
 		AppDelegate appDel = ((AppDelegate)getApplicationContext());
 		if(appDel.connected){
+			Log.w(TAG, "msg = "+message);
 			appDel.sendMsgTransImg(message);
 		}
 		else{
