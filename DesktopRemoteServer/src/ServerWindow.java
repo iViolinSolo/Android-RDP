@@ -342,7 +342,7 @@ public class ServerWindow implements ActionListener{
 			try {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 				//-----begin---绘制鼠标 因为直接截屏之后的图片是没有鼠标的
-				Image cursorImg = ImageIO.read(new File("z:/cursor.png"));//TODO: REMEBER to change the file path
+				Image cursorImg = ImageIO.read(new File("cursor.png"));//TODO: REMEBER to change the file path//I have changed!
 				
 				int curCursorX = MouseInfo.getPointerInfo().getLocation().x;
 				int curCursorY = MouseInfo.getPointerInfo().getLocation().y;
